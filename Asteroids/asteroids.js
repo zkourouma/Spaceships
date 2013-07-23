@@ -43,7 +43,7 @@ function Game(xDim, yDim, ctx){
   this.asteroids = [];
   this.bullets = [];
   this.ship = new Ship(xDim/2, yDim/2);
-  for (var i = 0; i < 20; i++) {
+  for (var i = 0; i < 5; i++) {
     this.randomAsteroid();
   };
 };
@@ -193,16 +193,20 @@ Game.prototype.start = function(){
   this.timer = window.setInterval(function(){
     that.draw(img, img2);
     that.update();
-    if (that.asteroids.length === 0){
-      window.clearInterval(that.timer);
-      alert("kill yourself");
-    }
+    // if (that.asteroids.length === 0){
+//       window.clearInterval(that.timer);
+//       alert("kill yourself");
+//     }
   }, 31.25);
 };
 
 function Ship(x, y){
   this.x = x;
   this.y = y;
+  // this.midX = x;
+//   this.midY = y + 15;
+  // this.direction = {x: this.x - this.midX,
+//                     y: this.y - this.midY}
   this.radius = 10;
   this.velocity = {x: 0, y: 0};
 }
@@ -211,10 +215,11 @@ Ship.prototype = new Surrogate();
 Ship.prototype.draw = function(ctx){
   ctx.beginPath();
   ctx.fillStyle = "#00bdda";
-  var startAngle = 0;
-  var endAngle = 2 * Math.PI;
-  var counterClockwise = false;
-  ctx.arc(this.x, this.y, this.radius, startAngle, endAngle, counterClockwise);
+
+  ctx.moveTo(this.x,this.y);
+  ctx.lineTo(this.x-10,this.y+30);
+  ctx.lineTo(this.x+10,this.y+30);
+  ctx.closePath();
   ctx.fill();
 };
 
@@ -223,7 +228,7 @@ Ship.prototype.isHit = function(asteroids){
   var hit = false;
   asteroids.forEach(function(el, i, arr){
     if (Math.sqrt(Math.pow(el.x - that.x, 2) +
-        Math.pow(el.y - that.y, 2)) < el.radius/1.25 + that.radius){
+        Math.pow(el.y - that.x, 2)) < el.radius/1.25 + that.radius){
       hit = true;
     }
   });
@@ -231,18 +236,26 @@ Ship.prototype.isHit = function(asteroids){
 };
 
 Ship.prototype.update = function(obj){
+  // this.direction = {x: this.x - this.midX,
+  //                   y: this.y - this.midY}
   this.x += obj.x;
   this.y += obj.y;
+  // this.midX = this.x;
+//   this.midY = this.y + 15;
 };
 
 Ship.prototype.power = function(dx, dy){
   this.velocity.x += dx;
   this.velocity.y += dy;
-}
+};
+
+// Ship.prototype.rotate = function(x, y){
+//
+// };
 
 Ship.prototype.fireBullet = function (game) {
   new Bullet({x: this.x, y: this.y}, this.velocity, game);
-}
+};
 
 function Bullet(position, velocity, game){
   game.bullets.push(this);
@@ -269,13 +282,13 @@ Bullet.prototype.draw = function(ctx){
   var counterClockwise = false;
   ctx.arc(this.x, this.y, this.radius, startAngle, endAngle, counterClockwise);
   ctx.fill();
-}
+};
 
 Bullet.prototype.update = function(obj){
   this.x += obj.x;
   this.y += obj.y;
   this.velocity
-}
+};
 
 Bullet.prototype.hitAsteroid = function(asteroids){
   var that = this;
