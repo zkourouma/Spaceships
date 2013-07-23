@@ -16,6 +16,10 @@ function Asteroid(x, y){
   this.x = x;
   this.y = y;
   this.radius = 25 * Math.random();
+  var dir = Math.random() < 0.5 ? -1 : 1
+  this.velocity = {
+    x: Math.random() * 2 * dir,
+    y: Math.random() * 2 * dir}
 }
 
 function Surrogate() {};
@@ -23,8 +27,6 @@ Surrogate.prototype = MovingObject.prototype;
 Asteroid.prototype = new Surrogate();
 
 Asteroid.prototype.draw = function(ctx){
-  // var canvas = document.getElementById('canvas');
-  // var c = canvas.getContext('2d');
   ctx.beginPath();
   ctx.fillStyle = "blue";
   var startAngle = 0;
@@ -42,7 +44,7 @@ function Game(xDim, yDim, ctx){
   this.ctx = ctx;
   this.asteroids = [];
   this.ship = new Ship(xDim/2, yDim/2);
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 2; i++) {
     this.randomAsteroid();
   };
 };
@@ -62,23 +64,52 @@ Game.prototype.draw = function(){
     el.draw(that.ctx);
   });
   this.ship.draw(this.ctx);
-  console.log(this.ship);
 };
 
 Game.prototype.update = function(){
   var that = this;
-  this.asteroids.forEach(function(el, i, arr){
-    el.update({x: 2, y: 2});
-    if (el.x > that.xDim || el.y > that.yDim){
+  that.ship.update(that.ship.velocity);
+  that.asteroids.forEach(function(el, i, arr){
+    el.update(el.velocity);
+    if (el.x > that.xDim || el.y > that.yDim || el.x < 0 || el.y < 0){
       that.asteroids.splice(i, 1);
       that.randomAsteroid();
     }
   });
+  if (this.ship.isHit(this.asteroids)){
+    var that = this;
+    window.clearInterval(that.timer);
+    alert("Game over!");
+  }
 };
 
 Game.prototype.start = function(){
   var that = this;
-  window.setInterval(function(){
+  key("up", function(){
+    if (that.ship.velocity.y > 0){
+      that.ship.velocity.y = 0
+    }
+    that.ship.velocity.y -= 0.5
+  });
+
+  key("down", function(){
+    if (that.ship.velocity.y < 0){
+      that.ship.velocity.y = 0
+    }
+    that.ship.velocity.y += 0.5});
+
+  key("left", function(){
+    if (that.ship.velocity.x > 0){
+      that.ship.velocity.x = 0
+    }
+    that.ship.velocity.x -= 0.5});
+
+  key("right", function(){
+    if (that.ship.velocity.x < 0){
+      that.ship.velocity.x = 0
+    }
+    that.ship.velocity.x += 0.5});
+  this.timer = window.setInterval(function(){
     that.draw();
     that.update();
   }, 31.25);
@@ -95,17 +126,26 @@ Ship.prototype = new Surrogate();
 Ship.prototype.draw = function(ctx){
   ctx.beginPath();
   ctx.fillStyle = "black";
-  var startAngle = 1.7 * Math.PI;
-  var endAngle = 0.8 * Math.PI;
+  var startAngle = 0;
+  var endAngle = 2 * Math.PI;
   var counterClockwise = false;
   ctx.arc(this.x, this.y, this.radius, startAngle, endAngle, counterClockwise);
   ctx.fill();
 };
 
-Ship.prototype.isHit = function(){
-
+Ship.prototype.isHit = function(asteroids){
+  var that = this;
+  var hit = false;
+  asteroids.forEach(function(el, i, arr){
+    if (Math.sqrt(Math.pow(el.x-that.x, 2) +
+        Math.pow(el.y-that.y, 2)) < el.radius + that.radius){
+      hit = true;
+    }
+  });
+  return hit;
 };
 
-Ship.prototype.update = function(){
-
+Ship.prototype.update = function(obj){
+  this.x += obj.x;
+  this.y += obj.y;
 };
