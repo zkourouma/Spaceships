@@ -15,7 +15,7 @@ MovingObject.prototype.offScreen = function(gameObj){
 function Asteroid(x, y){
   this.x = x;
   this.y = y;
-  this.radius = 10 * (Math.random() + 1);
+  this.radius = 20 * (Math.random() + 1);
   var dir = Math.random() < 0.5 ? -1 : 1
   this.velocity = {
     x: Math.random() * 2 * dir,
@@ -26,14 +26,12 @@ function Surrogate() {};
 Surrogate.prototype = MovingObject.prototype;
 Asteroid.prototype = new Surrogate();
 
-Asteroid.prototype.draw = function(ctx){
-  ctx.beginPath();
-  ctx.fillStyle = "blue";
-  var startAngle = 0;
-  var endAngle = 2 * Math.PI;
-  var counterClockwise = false;
-  ctx.arc(this.x, this.y, this.radius, startAngle, endAngle, counterClockwise);
-  ctx.fill();
+Asteroid.prototype.draw = function(ctx, img2){
+  ctx.drawImage(img2, this.x - this.radius,
+                     this.y - this.radius,
+                     this.radius * 2,
+                     this.radius * 2);
+
 };
 
 
@@ -45,7 +43,7 @@ function Game(xDim, yDim, ctx){
   this.asteroids = [];
   this.bullets = [];
   this.ship = new Ship(xDim/2, yDim/2);
-  for (var i = 0; i < 50; i++) {
+  for (var i = 0; i < 20; i++) {
     this.randomAsteroid();
   };
 };
@@ -80,15 +78,13 @@ Game.prototype.randomAsteroid = function(){
   this.asteroids.push(new Asteroid(x, y));
 };
 
-Game.prototype.draw = function(){
-  this.ctx.clearRect(0, 0, this.xDim, this.yDim);
-  this.ctx.fillStyle = "yellow";
-  this.ctx.fillRect(0,0,this.xDim,this.yDim);
-
+Game.prototype.draw = function(img, img2){
   var that = this;
 
+  that.ctx.drawImage(img, 0, 0, that.xDim, that.yDim);
+
   this.asteroids.forEach(function(el, i, arr){
-    el.draw(that.ctx);
+    el.draw(that.ctx, img2);
   });
 
   this.ship.draw(this.ctx);
@@ -125,7 +121,6 @@ Game.prototype.update = function(){
   if (this.ship.isHit(this.asteroids)){
     var that = this;
     window.clearInterval(that.timer);
-    alert("Game over!");
   }
   that.bullets.forEach(function(el, i, arr){
     if (el.hitAsteroid(that.asteroids)[0]){
@@ -144,6 +139,25 @@ Game.prototype.update = function(){
 
 Game.prototype.start = function(){
   var that = this;
+
+  var img = new Image();
+  img.src = 'space.png';
+  img.onload = function () {
+    that.ctx.drawImage(img, 0, 0, that.xDim, that.yDim);
+  };
+
+  var img2 = new Image();
+  img2.src = 'asteroid.png';
+
+  this.asteroids.forEach(function(el, i, arr){
+    img2.onload = function(){
+      that.ctx.drawImage(img2, el.x - el.radius/2,
+                         el.y - el.radius/2,
+                         el.radius * 2,
+                         el.radius * 2);
+    }
+  })
+
   key("up", function(){
     if (that.ship.velocity.y > 0){
       that.ship.velocity.y = 1
@@ -177,8 +191,12 @@ Game.prototype.start = function(){
   });
 
   this.timer = window.setInterval(function(){
-    that.draw();
+    that.draw(img, img2);
     that.update();
+    if (that.asteroids.length === 0){
+      window.clearInterval(that.timer);
+      alert("kill yourself");
+    }
   }, 31.25);
 };
 
@@ -192,7 +210,7 @@ Ship.prototype = new Surrogate();
 
 Ship.prototype.draw = function(ctx){
   ctx.beginPath();
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "#00bdda";
   var startAngle = 0;
   var endAngle = 2 * Math.PI;
   var counterClockwise = false;
@@ -205,7 +223,7 @@ Ship.prototype.isHit = function(asteroids){
   var hit = false;
   asteroids.forEach(function(el, i, arr){
     if (Math.sqrt(Math.pow(el.x - that.x, 2) +
-        Math.pow(el.y - that.y, 2)) < el.radius + that.radius){
+        Math.pow(el.y - that.y, 2)) < el.radius/1.25 + that.radius){
       hit = true;
     }
   });
@@ -245,7 +263,7 @@ Bullet.prototype = new Surrogate();
 
 Bullet.prototype.draw = function(ctx){
   ctx.beginPath();
-  ctx.fillStyle = "red";
+  ctx.fillStyle = "#d4c400";
   var startAngle = 0;
   var endAngle = 2 * Math.PI;
   var counterClockwise = false;
