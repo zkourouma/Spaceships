@@ -69,6 +69,18 @@ Game.prototype.draw = function(){
 Game.prototype.update = function(){
   var that = this;
   that.ship.update(that.ship.velocity);
+  if (that.ship.x > that.xDim){
+    that.ship.x = 0;
+  }
+  else if (that.ship.x < 0){
+    that.ship.x = that.xDim;
+  }
+  if (that.ship.y > that.yDim){
+    that.ship.y = 0;
+  }
+  else if (that.ship.y < 0){
+    that.ship.y = that.yDim;
+  }
   that.asteroids.forEach(function(el, i, arr){
     el.update(el.velocity);
     if (el.x > that.xDim || el.y > that.yDim || el.x < 0 || el.y < 0){
@@ -118,7 +130,7 @@ Game.prototype.start = function(){
 function Ship(x, y){
   this.x = x;
   this.y = y;
-  this.radius = 15;
+  this.radius = 10;
   this.velocity = {x: 0, y: 0};
 }
 Ship.prototype = new Surrogate();
