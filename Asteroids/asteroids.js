@@ -51,8 +51,32 @@ function Game(xDim, yDim, ctx){
 };
 
 Game.prototype.randomAsteroid = function(){
-  var x = Math.floor(Math.random() * this.xDim);
-  var y = Math.floor(Math.random() * this.yDim);
+  var x;
+  var y;
+  if (Math.random() > 0.5){
+
+    if (Math.random() > 0.5){
+      x = Math.floor(Math.random() * (50));
+    }
+    else{
+      x = Math.floor(Math.random() * (this.xDim-(this.xDim-50)) + (this.xDim-50));
+    }
+
+    y = Math.floor(Math.random() * (this.yDim));
+
+  }
+  else{
+    if (Math.random() > 0.5){
+      y = Math.floor(Math.random() * (50));
+    }
+    else{
+      y = Math.floor(Math.random() * (this.yDim-(this.yDim-50)) + (this.yDim-50));
+    }
+
+    x = Math.floor(Math.random() * (this.xDim));
+
+  };
+
   this.asteroids.push(new Asteroid(x, y));
 };
 
@@ -60,11 +84,15 @@ Game.prototype.draw = function(){
   this.ctx.clearRect(0, 0, this.xDim, this.yDim);
   this.ctx.fillStyle = "yellow";
   this.ctx.fillRect(0,0,this.xDim,this.yDim);
+
   var that = this;
+
   this.asteroids.forEach(function(el, i, arr){
     el.draw(that.ctx);
   });
+
   this.ship.draw(this.ctx);
+
   this.bullets.forEach(function(el, i, arr){
     el.draw(that.ctx);
   });
@@ -103,6 +131,9 @@ Game.prototype.update = function(){
     if (el.hitAsteroid(that.asteroids)[0]){
       that.asteroids.splice(el.hitAsteroid(that.asteroids)[1], 1);
       that.bullets.splice(i, 1);
+      if (Math.random() > 0.5){
+        that.randomAsteroid();
+      }
     }
     if (el.offScreen(that)){
       that.bullets.splice(i, 1);
@@ -173,8 +204,8 @@ Ship.prototype.isHit = function(asteroids){
   var that = this;
   var hit = false;
   asteroids.forEach(function(el, i, arr){
-    if (Math.sqrt(Math.pow(el.x-that.x, 2) +
-        Math.pow(el.y-that.y, 2)) < el.radius + that.radius){
+    if (Math.sqrt(Math.pow(el.x - that.x, 2) +
+        Math.pow(el.y - that.y, 2)) < el.radius + that.radius){
       hit = true;
     }
   });
