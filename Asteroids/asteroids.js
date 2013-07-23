@@ -44,7 +44,7 @@ function Game(xDim, yDim, ctx){
   this.ctx = ctx;
   this.asteroids = [];
   this.ship = new Ship(xDim/2, yDim/2);
-  for (var i = 0; i < 2; i++) {
+  for (var i = 0; i < 9; i++) {
     this.randomAsteroid();
   };
 };
@@ -98,29 +98,20 @@ Game.prototype.update = function(){
 Game.prototype.start = function(){
   var that = this;
   key("up", function(){
-    if (that.ship.velocity.y > 0){
-      that.ship.velocity.y = 0
-    }
-    that.ship.velocity.y -= 0.5
+    that.ship.power(0, -1)
   });
 
   key("down", function(){
-    if (that.ship.velocity.y < 0){
-      that.ship.velocity.y = 0
-    }
-    that.ship.velocity.y += 0.5});
+    that.ship.power(0, 1)
+  });
 
   key("left", function(){
-    if (that.ship.velocity.x > 0){
-      that.ship.velocity.x = 0
-    }
-    that.ship.velocity.x -= 0.5});
+    that.ship.power(-1, 0)
+  });
 
   key("right", function(){
-    if (that.ship.velocity.x < 0){
-      that.ship.velocity.x = 0
-    }
-    that.ship.velocity.x += 0.5});
+    that.ship.power(1, 0)
+  });
   this.timer = window.setInterval(function(){
     that.draw();
     that.update();
@@ -161,3 +152,8 @@ Ship.prototype.update = function(obj){
   this.x += obj.x;
   this.y += obj.y;
 };
+
+Ship.prototype.power = function(dx, dy){
+  this.velocity.x += dx;
+  this.velocity.y += dy;
+}
